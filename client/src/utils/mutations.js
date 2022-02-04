@@ -35,7 +35,6 @@ export const SAVE_BOOK = gql`
         description
         bookId
         image
-        link
         title
       }
     }
@@ -43,7 +42,7 @@ export const SAVE_BOOK = gql`
 `;
 
 export const REMOVE_BOOK = gql`
-  mutation removeBook($bookId: ID!) {
+  mutation removeBook($bookId: String!) {
     removeBook(bookId: $bookId) {
       username
       email
@@ -53,7 +52,6 @@ export const REMOVE_BOOK = gql`
         description
         bookId
         image
-        link
         title
       }
     }

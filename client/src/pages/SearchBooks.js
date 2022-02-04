@@ -15,10 +15,10 @@ import { searchGoogleBooks } from "../utils/API";
 import { saveBookIds, getSavedBookIds } from "../utils/localStorage";
 
 import { useMutation } from "@apollo/client";
-import { SAVE_BOOK } from "../../utils/mutations";
+import { SAVE_BOOK } from "../utils/mutations";
 
 // import { QUERY_THOUGHTS } from "../../utils/queries";
-import { GET_ME } from "../../utils/queries";
+import { GET_ME } from "../utils/queries";
 
 const SearchBooks = () => {
   // create state for holding returned google api data
@@ -29,28 +29,29 @@ const SearchBooks = () => {
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
 
-  const [saveBook] = useMutation(SAVE_BOOK, {
-    update(cache, { data: { saveBook } }) {
-      // read what's currently in the cache
-      try {
-        const { books } = cache.readQuery({ query: GET_ME });
+  const [saveBook] = useMutation(SAVE_BOOK);
+  //   , {
+  //   update(cache, { data: { saveBook } }) {
+  //     // read what's currently in the cache
+  //     try {
+  //       const { me } = cache.readQuery({ query: GET_ME });
 
-        // prepend the newest thought to the front of the array
-        cache.writeQuery({
-          query: GET_ME,
-          data: { books: [saveBook, ...books] },
-        });
-      } catch (e) {
-        console.error(e);
-      }
-      // update me object's cache, appending new thought to the end of the array
-      const { me } = cache.readQuery({ query: GET_ME });
-      cache.writeQuery({
-        query: GET_ME,
-        data: { me: { ...me, savedBooks: [...me.savedBooks, bookToSave] } },
-      });
-    },
-  });
+  //       // prepend the newest thought to the front of the array
+  //       cache.writeQuery({
+  //         query: GET_ME,
+  //         data: { books: [saveBook, ...me] },
+  //       });
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //     // update me object's cache, appending new thought to the end of the array
+  //     const { me } = cache.readQuery({ query: GET_ME });
+  //     cache.writeQuery({
+  //       query: GET_ME,
+  //       data: { me: { ...me, savedBooks: [...me.savedBooks, bookToSave] } },
+  //     });
+  //   },
+  // });
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
@@ -110,8 +111,19 @@ const SearchBooks = () => {
       // }
 
       // // if book successfully saves to user's account, save book id to state
+      // await saveBook({
+      //   variables: { books: bookToSave },
+      // });
       await saveBook({
-        variables: { books: bookToSave },
+        variables: { book: { ...bookToSave } },
+        update: (cache) => {
+          const { me } = cache.readQuery({ query: GET_ME });
+          // console.log(me);
+          cache.writeQuery({
+            query: GET_ME,
+            data: { me: { ...me, savedBooks: [...me.savedBooks, bookToSave] } },
+          });
+        },
       });
 
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
